@@ -202,13 +202,21 @@ public class XATest {
 
 				} catch (Exception e) {
 					System.err
-							.println("Exception during initialisation of first branch! "
+							.println("Exception during initialisation of second branch! "
 									+ e.getMessage());
 					e.printStackTrace();
 					return;
 				}
 		
-		
+				// Start of the second XA Branch
+				try {
+					xares2.start(xid2, XAResource.TMNOFLAGS);
+				} catch (Exception e) {
+					System.out.println("Error during start of the second branch! "
+							+ e.getMessage());
+					e.printStackTrace();
+					return;
+				}
 		
 		
 		
