@@ -267,6 +267,18 @@ public class XATest {
 		}
 
 		// Other branches Prepare to commit here.
+		try {
+			if (branch2_OK) {
+				System.out
+				.println("Executing prepare to commit of second branch");
+				prepareResultBranch2 = xares2.prepare(xid2);
+			} else {
+				System.out
+				.println("No prepare to commit of second branch because branch was not successful");
+			}
+		} catch (XAException e) {
+			System.out.println("Fehler in prepare to commit! " + e.errorCode);
+		}
 
 		// Now the final decision: if all branches are successful go for commit on
 		// all branches.
@@ -275,13 +287,15 @@ public class XATest {
 			System.out.println("Result of prepare to commit of first branch: "
 					+ prepareResultBranch1);
 			// Prepare OK => Commit
-			if (prepareResultBranch1 == XAResource.XA_OK) {
+			if (prepareResultBranch1 == XAResource.XA_OK && prepareResultBranch2 == XAResource.XA_OK ){
 				System.out.println("Commit of all branches!");
 				xares1.commit(xid1, false);
+				xares2.commit(xid2, false);
 				// Read only transactions do not need commit or rollback
-			} else if (prepareResultBranch1 != XAResource.XA_RDONLY) {
+			} else if (prepareResultBranch1 != XAResource.XA_RDONLY && prepareResultBranch2 != XAResource.XA_RDONLY) {
 				System.out.println("Rollback of all branches due to failures!");
 				xares1.rollback(xid1);
+				xares2.rollback(xid2);
 			}
 		} catch (XAException e) {
 			System.out.println("XA Commit/Rollback not possible! "
