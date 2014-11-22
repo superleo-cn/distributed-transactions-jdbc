@@ -37,8 +37,8 @@ public class XATest {
 		// Create the Oracle Transaction Id
 		// Transaction Id has 3 components
 		Xid xid = new OracleXid(	0x1234, 		// Format identifier
-									globalTransId, 	// Global transaction identifier
-									branchQualifier); // Branch qualifier
+				globalTransId, 	// Global transaction identifier
+				branchQualifier); // Branch qualifier
 
 		return xid;
 	}
@@ -116,8 +116,8 @@ public class XATest {
 
 		} catch (Exception e) {
 			System.err
-					.println("Exception during initialisation of first branch! "
-							+ e.getMessage());
+			.println("Exception during initialisation of first branch! "
+					+ e.getMessage());
 			e.printStackTrace();
 			return;
 		}
@@ -149,8 +149,8 @@ public class XATest {
 		// End of the first transaction branch
 		try {
 			System.out
-					.println("The first XA branch has finished execution with result: "
-							+ branch1_OK);
+			.println("The first XA branch has finished execution with result: "
+					+ branch1_OK);
 			if (branch1_OK)
 				xares1.end(xid1, XAResource.TMSUCCESS);
 			else
@@ -164,73 +164,88 @@ public class XATest {
 		// or if you like you can also implement a multithreaded version where
 		// branches are executed in parallel.
 		// Initialisation of the second transaction branch
-				try {
-					// Connect to the database
-					oxa2 = new OracleXADataSource();
-					oxa2.setURL(ORACLE_CONNECTION_STRING);
-					oxa2.setUser(ORACLE_USERNAME);
-					oxa2.setPassword(ORACLE_PASSWORD);
+		try {
+			// Connect to the database
+			oxa2 = new OracleXADataSource();
+			oxa2.setURL(ORACLE_CONNECTION_STRING);
+			oxa2.setUser(ORACLE_USERNAME);
+			oxa2.setPassword(ORACLE_PASSWORD);
 
-					// get a XA connection
-					xacon2 = oxa2.getXAConnection();
+			// get a XA connection
+			xacon2 = oxa2.getXAConnection();
 
-					// get a normal JDBC connection
-					connection2 = xacon2.getConnection();
-					// Do not use autocommit for SQL operations
-					connection2.setAutoCommit(false);
+			// get a normal JDBC connection
+			connection2 = xacon2.getConnection();
+			// Do not use autocommit for SQL operations
+			connection2.setAutoCommit(false);
 
-					// Create a XAResource object for the given XA connection
-					xares2 = xacon2.getXAResource();
+			// Create a XAResource object for the given XA connection
+			xares2 = xacon2.getXAResource();
 
-					// Look for pending transaction branches
-					Xid xids[] = xares2.recover(XAResource.TMSTARTRSCAN);
-					System.out.println("Found " + xids.length
-							+ " pending transaction branches!");
+			// Look for pending transaction branches
+			Xid xids[] = xares2.recover(XAResource.TMSTARTRSCAN);
+			System.out.println("Found " + xids.length
+					+ " pending transaction branches!");
 
-					// Perform a Rollback of all pending transaction branches
-					for (int i = 0; i < xids.length; i++) {
-						System.out.println("Rollback of transaction branch XID: "
-								+ xids[i].getGlobalTransactionId()[0] + ":"
-								+ xids[i].getBranchQualifier()[0]);
-						xares2.rollback(xids[i]);
-						i++;
-					}
+			// Perform a Rollback of all pending transaction branches
+			for (int i = 0; i < xids.length; i++) {
+				System.out.println("Rollback of transaction branch XID: "
+						+ xids[i].getGlobalTransactionId()[0] + ":"
+						+ xids[i].getBranchQualifier()[0]);
+				xares2.rollback(xids[i]);
+				i++;
+			}
 
-					// Create a new transaction ID for this branch. Transaction: 19
-					// branch: 2
-					xid2 = createXid(19, 2);
+			// Create a new transaction ID for this branch. Transaction: 19
+			// branch: 2
+			xid2 = createXid(19, 2);
 
-				} catch (Exception e) {
-					System.err
-							.println("Exception during initialisation of second branch! "
-									+ e.getMessage());
-					e.printStackTrace();
-					return;
-				}
-		
-				// Start of the second XA Branch
-				try {
-					xares2.start(xid2, XAResource.TMNOFLAGS);
-				} catch (Exception e) {
-					System.out.println("Error during start of the second branch! "
-							+ e.getMessage());
-					e.printStackTrace();
-					return;
-				}
-		
-		
-		
+		} catch (Exception e) {
+			System.err
+			.println("Exception during initialisation of second branch! "
+					+ e.getMessage());
+			e.printStackTrace();
+			return;
+		}
+
+		// Start of the second XA Branch
+		try {
+			xares2.start(xid2, XAResource.TMNOFLAGS);
+		} catch (Exception e) {
+			System.out.println("Error during start of the second branch! "
+					+ e.getMessage());
+			e.printStackTrace();
+			return;
+		}
+
+
+		// Here the actual work of the transaction branch is performed.
+		// Attention: you have to remember if SQL statements in a branch were
+		// successful or not.
+		try {
+			Statement stmt2 = connection2.createStatement();
+			String sql2 = "UPDATE account SET balance = balance + 100.50 WHERE IBAN='CH5367A1'";
+			stmt2.executeUpdate(sql2);
+		} catch (SQLException e) {
+			// Error in SQL statement
+			branch1_OK = false;
+			System.out.println("Error in SQL statement of second branch! "
+					+ e.getMessage());
+		}
+
+
+
 
 		// Finally we come the core of 2PhaseCommit protocol.
 		// First the prepare to commit of first branch (only if successful).
 		try {
 			if (branch1_OK) {
 				System.out
-						.println("Executing prepare to commit of first branch");
+				.println("Executing prepare to commit of first branch");
 				prepareResultBranch1 = xares1.prepare(xid1);
 			} else {
 				System.out
-						.println("No prepare to commit of first branch because branch was not successful");
+				.println("No prepare to commit of first branch because branch was not successful");
 			}
 		} catch (XAException e) {
 			System.out.println("Fehler in prepare to commit! " + e.errorCode);
@@ -264,7 +279,7 @@ public class XATest {
 			xacon1.close();
 		} catch (SQLException e) {
 			System.err
-					.println("Error on closing connections " + e.getMessage());
+			.println("Error on closing connections " + e.getMessage());
 			e.printStackTrace();
 		}
 
