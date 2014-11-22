@@ -232,6 +232,21 @@ public class XATest {
 			System.out.println("Error in SQL statement of second branch! "
 					+ e.getMessage());
 		}
+		
+		
+		// End of the second transaction branch
+		try {
+			System.out
+			.println("The second XA branch has finished execution with result: "
+					+ branch2_OK);
+			if (branch2_OK)
+				xares2.end(xid2, XAResource.TMSUCCESS);
+			else
+				xares2.end(xid2, XAResource.TMFAIL);
+		} catch (XAException e) {
+			System.out.println("Exception on ending second XA branch! "
+					+ e.errorCode);
+		}
 
 
 
@@ -277,6 +292,16 @@ public class XATest {
 		try {
 			connection1.close();
 			xacon1.close();
+		} catch (SQLException e) {
+			System.err
+			.println("Error on closing connections " + e.getMessage());
+			e.printStackTrace();
+		}
+		
+		// Finally we close the connections
+		try {
+			connection2.close();
+			xacon2.close();
 		} catch (SQLException e) {
 			System.err
 			.println("Error on closing connections " + e.getMessage());
