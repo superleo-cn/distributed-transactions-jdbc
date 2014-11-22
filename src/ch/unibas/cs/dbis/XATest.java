@@ -197,8 +197,8 @@ public class XATest {
 					}
 
 					// Create a new transaction ID for this branch. Transaction: 19
-					// branch: 1
-					xid2 = createXid(19, 1);
+					// branch: 2
+					xid2 = createXid(19, 2);
 
 				} catch (Exception e) {
 					System.err
