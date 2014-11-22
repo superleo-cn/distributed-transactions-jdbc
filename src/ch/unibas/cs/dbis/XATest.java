@@ -163,6 +163,55 @@ public class XATest {
 		// Other XA branches may be inserted here
 		// or if you like you can also implement a multithreaded version where
 		// branches are executed in parallel.
+		// Initialisation of the second transaction branch
+				try {
+					// Connect to the database
+					oxa2 = new OracleXADataSource();
+					oxa2.setURL(ORACLE_CONNECTION_STRING);
+					oxa2.setUser(ORACLE_USERNAME);
+					oxa2.setPassword(ORACLE_PASSWORD);
+
+					// get a XA connection
+					xacon2 = oxa2.getXAConnection();
+
+					// get a normal JDBC connection
+					connection2 = xacon2.getConnection();
+					// Do not use autocommit for SQL operations
+					connection2.setAutoCommit(false);
+
+					// Create a XAResource object for the given XA connection
+					xares2 = xacon2.getXAResource();
+
+					// Look for pending transaction branches
+					Xid xids[] = xares2.recover(XAResource.TMSTARTRSCAN);
+					System.out.println("Found " + xids.length
+							+ " pending transaction branches!");
+
+					// Perform a Rollback of all pending transaction branches
+					for (int i = 0; i < xids.length; i++) {
+						System.out.println("Rollback of transaction branch XID: "
+								+ xids[i].getGlobalTransactionId()[0] + ":"
+								+ xids[i].getBranchQualifier()[0]);
+						xares2.rollback(xids[i]);
+						i++;
+					}
+
+					// Create a new transaction ID for this branch. Transaction: 19
+					// branch: 1
+					xid2 = createXid(19, 1);
+
+				} catch (Exception e) {
+					System.err
+							.println("Exception during initialisation of first branch! "
+									+ e.getMessage());
+					e.printStackTrace();
+					return;
+				}
+		
+		
+		
+		
+		
 
 		// Finally we come the core of 2PhaseCommit protocol.
 		// First the prepare to commit of first branch (only if successful).
