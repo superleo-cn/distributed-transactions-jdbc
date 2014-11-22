@@ -15,8 +15,8 @@ import oracle.jdbc.xa.client.OracleXADataSource;
 public class XATest {
 
 	private static final String ORACLE_CONNECTION_STRING = "jdbc:oracle:thin:@p6.cs.unibas.ch:1521:orclp6";
-	private static final String ORACLE_USERNAME = "";	
-	private static final String ORACLE_PASSWORD = "";
+	private static final String ORACLE_USERNAME = "CS341_3";	
+	private static final String ORACLE_PASSWORD = "F3NNcYjK";
 
 	/**
 	 * Creates a unique Transaction Id for each branch. Transaction Id will be
