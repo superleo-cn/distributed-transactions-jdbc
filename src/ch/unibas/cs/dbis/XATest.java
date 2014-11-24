@@ -167,7 +167,7 @@ public class XATest {
 		try {
 			// Connect to the database
 			oxa2 = new OracleXADataSource();
-			oxa2.setURL(ORACLE_CONNECTION_STRING);
+			oxa2.setURL("jdbc:oracle:thin:@p7.cs.unibas.ch:1521:orclp7");
 			oxa2.setUser(ORACLE_USERNAME);
 			oxa2.setPassword(ORACLE_PASSWORD);
 
@@ -224,11 +224,11 @@ public class XATest {
 		// successful or not.
 		try {
 			Statement stmt2 = connection2.createStatement();
-			String sql2 = "UPDATE account SET balance = balance + 100.50 WHERE IBAN='CH5367A1'";
+			String sql2 = "UPDATE account SET balance = balance - 100.50 WHERE IBAN='CH5367A2'";
 			stmt2.executeUpdate(sql2);
 		} catch (SQLException e) {
 			// Error in SQL statement
-			branch1_OK = false;
+			branch2_OK = false;
 			System.out.println("Error in SQL statement of second branch! "
 					+ e.getMessage());
 		}
@@ -286,6 +286,8 @@ public class XATest {
 		try {
 			System.out.println("Result of prepare to commit of first branch: "
 					+ prepareResultBranch1);
+			System.out.println("Result of prepare to commit of second branch: "
+					+ prepareResultBranch2);
 			// Prepare OK => Commit
 			if (prepareResultBranch1 == XAResource.XA_OK && prepareResultBranch2 == XAResource.XA_OK ){
 				System.out.println("Commit of all branches!");
@@ -293,6 +295,10 @@ public class XATest {
 				xares2.commit(xid2, false);
 				// Read only transactions do not need commit or rollback
 			} else if (prepareResultBranch1 != XAResource.XA_RDONLY && prepareResultBranch2 != XAResource.XA_RDONLY) {
+				System.out.println("Rollback of all branches due to failures!");
+				xares1.rollback(xid1);
+				xares2.rollback(xid2);
+			}else{
 				System.out.println("Rollback of all branches due to failures!");
 				xares1.rollback(xid1);
 				xares2.rollback(xid2);
